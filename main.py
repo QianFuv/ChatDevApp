@@ -136,6 +136,7 @@ def main(page: ft.Page):
                         width=200,
                     ),
                     padding=ft.padding.only(top=20),
+                    alignment=ft.alignment.center
                 ),
             ],
             spacing=20,
