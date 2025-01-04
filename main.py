@@ -97,9 +97,9 @@ def main(page: ft.Page):
     # 导航栏
     navigation_bar = ft.NavigationBar(
         destinations=[
-            ft.NavigationBarDestination(icon=ft.icons.LIST, label="列表"),
-            ft.NavigationBarDestination(icon=ft.icons.HOME, label="生成"),
-            ft.NavigationBarDestination(icon=ft.icons.SETTINGS, label="设置"),
+            ft.NavigationBarDestination(icon=ft.Icons.LIST, label="列表"),
+            ft.NavigationBarDestination(icon=ft.Icons.HOME, label="生成"),
+            ft.NavigationBarDestination(icon=ft.Icons.SETTINGS, label="设置"),
         ],
         selected_index=1,
         on_change=navigation_change
