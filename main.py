@@ -88,8 +88,61 @@ def main(page: ft.Page):
         visible=True
     )
 
-    # “设置”页面布局
-    settings_view = ft.Container(visible=False)
+    # "设置"页面布局
+    settings_view = ft.Container(
+        content=ft.Column(
+            controls=[
+                ft.Text("设置", size=28, weight=ft.FontWeight.BOLD),
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Text("服务器地址", size=16, weight=ft.FontWeight.W_500),
+                            ft.TextField(
+                                expand=True,
+                                multiline=False,
+                                text_align=ft.TextAlign.LEFT,
+                                border_color=ft.Colors.OUTLINE,
+                                border_width=2,
+                                hint_text="请输入服务器地址，如：http://localhost:8000"
+                            ),
+                        ],
+                        spacing=10,
+                    ),
+                    padding=ft.padding.only(left=20, right=20),
+                ),
+                ft.Container(
+                    content=ft.Column(
+                        controls=[
+                            ft.Text("API密钥", size=16, weight=ft.FontWeight.W_500),
+                            ft.TextField(
+                                expand=True,
+                                multiline=False,
+                                text_align=ft.TextAlign.LEFT,
+                                hint_text="请输入您的 OpenAI API 密钥",
+                                border_color=ft.Colors.OUTLINE,
+                                border_width=2,
+                                password=True  # 密码模式，显示为星号
+                            ),
+                        ],
+                        spacing=10,
+                    ),
+                    padding=ft.padding.only(left=20, right=20),
+                ),
+                ft.Container(
+                    content=ft.ElevatedButton(
+                        text="保存设置",
+                        width=200,
+                    ),
+                    padding=ft.padding.only(top=20),
+                ),
+            ],
+            spacing=20,
+            expand=True,
+        ),
+        padding=ft.padding.only(top=50),
+        expand=True,
+        visible=False
+    )
 
     def navigation_change(e):
         list_view.visible = e.control.selected_index == 0
