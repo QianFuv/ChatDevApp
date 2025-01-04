@@ -71,7 +71,9 @@ def main(page: ft.Page):
                     width=400,
                     multiline=False,
                     text_align=ft.TextAlign.LEFT,
-                    hint_text="在此填写您的提示词......"
+                    border_color = ft.Colors.OUTLINE,
+                    border_width = 2,
+                    hint_text="在此填写您的提示词......",
                 ),
                 ft.ElevatedButton(
                     text="生成",
