@@ -4,6 +4,12 @@ from datetime import datetime
 def main(page: ft.Page):
     page.title = "ChatDevApp"
 
+    page.fonts = {
+        "HYXuanSong45S": "fonts/HYXuanSong45S.ttf"
+    }
+
+    page.theme = ft.Theme(font_family="HYXuanSong45S")
+
     # 创建应用卡片函数
     def create_app_card(app_name: str, app_size: str, build_time: datetime):
         return ft.Container(
