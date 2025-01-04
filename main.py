@@ -13,7 +13,7 @@ def main(page: ft.Page):
                     ft.Row(
                         controls=[
                             ft.Text(f"Size: {app_size}"),
-                            ft.Text("•", color=ft.colors.GREY),
+                            ft.Text("•"),
                             ft.Text(f"Built: {build_time.strftime('%Y-%m-%d %H:%M')}")
                         ],
                         spacing=10
@@ -21,7 +21,7 @@ def main(page: ft.Page):
                 ]
             ),
             padding=20,
-            border=ft.border.all(1, ft.colors.OUTLINE),
+            border=ft.border.all(2, ft.colors.OUTLINE),
             border_radius=8,
             margin=ft.margin.only(bottom=10)
         )
