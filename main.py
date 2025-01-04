@@ -2,29 +2,43 @@ import flet as ft
 from datetime import datetime
 
 def main(page: ft.Page):
+
+    # 标题
     page.title = "ChatDevApp"
 
-    page.fonts = {
-        "HYXuanSong45S": "fonts/HYXuanSong45S.ttf"
-    }
+    # 导入字体
+    page.fonts = {"HYXuanSong45S": "fonts/HYXuanSong45S.ttf"}
 
+    # 设置默认字体
     page.theme = ft.Theme(font_family="HYXuanSong45S")
 
     # 创建应用卡片函数
-    def create_app_card(app_name: str, app_size: str, build_time: datetime):
+    def create_app_card(app_name: str, app_size: str, build_time: datetime, download_url: str):
         return ft.Container(
-            content=ft.Column(
+            content=ft.Row(
                 controls=[
-                    ft.Text(app_name, size=16, weight=ft.FontWeight.BOLD),
-                    ft.Row(
+                    ft.Column(
                         controls=[
-                            ft.Text(f"Size: {app_size}"),
-                            ft.Text("•"),
-                            ft.Text(f"Built: {build_time.strftime('%Y-%m-%d %H:%M')}")
+                            ft.Text(app_name, size=16, weight=ft.FontWeight.BOLD),
+                            ft.Row(
+                                controls=[
+                                    ft.Text(f"大小：{app_size}", size=12),
+                                    ft.Text("-"),
+                                    ft.Text(f"构建：{build_time.strftime('%Y-%m-%d %H:%M')}", size=12)
+                                ],
+                                spacing=10
+                            )
                         ],
-                        spacing=10
+                        expand=True
+                    ),
+                    ft.IconButton(
+                        icon=ft.Icons.DOWNLOAD,
+                        icon_color=ft.Colors.BLUE,
+                        tooltip="Download",
+                        url=download_url,
                     )
-                ]
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN
             ),
             padding=20,
             border=ft.border.all(2, ft.Colors.OUTLINE),
@@ -34,21 +48,21 @@ def main(page: ft.Page):
 
     # 示例应用列表
     apps = [
-        create_app_card("Chat App", "2.3 MB", datetime.now()),
-        create_app_card("Todo List", "1.5 MB", datetime.now()),
-        create_app_card("Calculator", "0.8 MB", datetime.now()),
-        create_app_card("Chat App", "2.3 MB", datetime.now()),
-        create_app_card("Todo List", "1.5 MB", datetime.now()),
-        create_app_card("Calculator", "0.8 MB", datetime.now()),
-        create_app_card("Chat App", "2.3 MB", datetime.now()),
-        create_app_card("Todo List", "1.5 MB", datetime.now()),
-        create_app_card("Calculator", "0.8 MB", datetime.now()),
-        create_app_card("Chat App", "2.3 MB", datetime.now()),
-        create_app_card("Todo List", "1.5 MB", datetime.now()),
-        create_app_card("Calculator", "0.8 MB", datetime.now())
+        create_app_card("Chat App", "2.3 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Todo List", "1.5 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Calculator", "0.8 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Chat App", "2.3 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Todo List", "1.5 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Calculator", "0.8 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Chat App", "2.3 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Todo List", "1.5 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Calculator", "0.8 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Chat App", "2.3 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Todo List", "1.5 MB", datetime.now(), download_url="https://example.com/download/myapp"),
+        create_app_card("Calculator", "0.8 MB", datetime.now(), download_url="https://example.com/download/myapp")
     ]
 
-    # “列表”页面布局
+    # <列表>页面布局
     list_view = ft.Container(
         content=ft.Column(
             controls=[
@@ -68,7 +82,7 @@ def main(page: ft.Page):
         visible=False
     )
 
-    # "生成"页面布局
+    # <生成>页面布局
     generate_view = ft.Container(
         content=ft.Column(
             controls=[
@@ -96,7 +110,7 @@ def main(page: ft.Page):
         visible=True
     )
 
-    # "设置"页面布局
+    # <设置>页面布局
     settings_view = ft.Container(
         content=ft.Column(
             controls=[
@@ -129,7 +143,7 @@ def main(page: ft.Page):
                                 hint_text="请输入您的 OpenAI API 密钥",
                                 border_color=ft.Colors.OUTLINE,
                                 border_width=2,
-                                password=True  # 密码模式，显示为星号
+                                password=True
                             ),
                         ],
                         spacing=10,
