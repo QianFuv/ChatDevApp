@@ -21,7 +21,7 @@ def main(page: ft.Page):
                 ]
             ),
             padding=20,
-            border=ft.border.all(2, ft.colors.OUTLINE),
+            border=ft.border.all(2, ft.Colors.OUTLINE),
             border_radius=8,
             margin=ft.margin.only(bottom=10)
         )
@@ -46,7 +46,7 @@ def main(page: ft.Page):
     list_view = ft.Container(
         content=ft.Column(
             controls=[
-                ft.Text("应用列表", size=32, weight=ft.FontWeight.BOLD),
+                ft.Text("应用列表", size=28, weight=ft.FontWeight.BOLD),
                 ft.ListView(
                     controls=apps,
                     spacing=0,
@@ -62,7 +62,7 @@ def main(page: ft.Page):
         visible=False
     )
 
-    # “生成”页面布局
+    # "生成"页面布局
     generate_view = ft.Container(
         content=ft.Column(
             controls=[
@@ -78,10 +78,13 @@ def main(page: ft.Page):
                     width=200,
                 )
             ],
+            alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=20
+            spacing=20,
+            expand=True
         ),
-        padding=ft.padding.only(top=100),
+        alignment=ft.alignment.center,
+        expand=True,
         visible=True
     )
 
