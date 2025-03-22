@@ -1,5 +1,5 @@
-/.idea
-
-/build
-
 /storage
+
+/chatdev_settings.json
+
+__pycache__
