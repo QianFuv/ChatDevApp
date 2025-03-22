@@ -146,18 +146,34 @@ class SettingsView:
             # Try simple health check first
             simple_health = self.api_client.simple_health_check()
             
-            if simple_health.get("status") == "ok":
+            # Debug information
+            print(f"Simple health check response: {simple_health}")
+            
+            # More flexible status check (case-insensitive, accepts multiple values)
+            status = simple_health.get("status", "").lower()
+            if status in ["ok", "up", "healthy"] or "success" in status:
                 # If simple health check passes, try API v1 health check
-                health = self.api_client.health_check()
-                
-                self.api_status.value = f"API Status: Connected (v{health.get('version', 'Unknown')})"
-                
-                # Show success message
-                self.page.snack_bar = ft.SnackBar(
-                    content=ft.Text("API connection successful"),
-                    action="Dismiss",
-                )
-                self.page.snack_bar.open = True
+                try:
+                    health = self.api_client.health_check()
+                    
+                    self.api_status.value = f"API Status: Connected (v{health.get('version', 'Unknown')})"
+                    
+                    # Show success message
+                    self.page.snack_bar = ft.SnackBar(
+                        content=ft.Text("API connection successful"),
+                        action="Dismiss",
+                    )
+                    self.page.snack_bar.open = True
+                except Exception as api_error:
+                    # If the API V1 health check fails but simple health succeeded
+                    self.api_status.value = "API Status: Connected (Base API only)"
+                    
+                    # Show partial success message
+                    self.page.snack_bar = ft.SnackBar(
+                        content=ft.Text("Connected to base API but API V1 health check failed"),
+                        action="Dismiss",
+                    )
+                    self.page.snack_bar.open = True
             else:
                 self.api_status.value = "API Status: Not Connected"
                 
