@@ -51,13 +51,13 @@ class AppListView:
         self.pagination = ft.Row(
             [
                 ft.IconButton(
-                    icon=ft.icons.ARROW_BACK,
+                    icon=ft.Icons.ARROW_BACK,
                     on_click=self.prev_page,
                     disabled=True,
                 ),
                 ft.Text("Page 1"),
                 ft.IconButton(
-                    icon=ft.icons.ARROW_FORWARD,
+                    icon=ft.Icons.ARROW_FORWARD,
                     on_click=self.next_page,
                     disabled=True,
                 ),
@@ -66,7 +66,7 @@ class AppListView:
         )
         
         self.refresh_button = ft.IconButton(
-            icon=ft.icons.REFRESH,
+            icon=ft.Icons.REFRESH,
             on_click=self.fetch_tasks,
         )
         
@@ -139,12 +139,12 @@ class AppListView:
         """Create a card for a task"""
         status = task.get("status", "Unknown")
         status_color = {
-            TASK_STATUS_PENDING: ft.colors.ORANGE,
-            TASK_STATUS_RUNNING: ft.colors.BLUE,
-            TASK_STATUS_COMPLETED: ft.colors.GREEN,
-            TASK_STATUS_FAILED: ft.colors.RED,
-            TASK_STATUS_CANCELLED: ft.colors.GREY,
-        }.get(status, ft.colors.GREY)
+            TASK_STATUS_PENDING: ft.Colors.ORANGE,
+            TASK_STATUS_RUNNING: ft.Colors.BLUE,
+            TASK_STATUS_COMPLETED: ft.Colors.GREEN,
+            TASK_STATUS_FAILED: ft.Colors.RED,
+            TASK_STATUS_CANCELLED: ft.Colors.GREY,
+        }.get(status, ft.Colors.GREY)
         
         task_id = task.get("task_id", 0)
         name = task.get("name", "Unknown")
@@ -157,7 +157,7 @@ class AppListView:
         if status in [TASK_STATUS_PENDING, TASK_STATUS_RUNNING]:
             actions.append(
                 ft.IconButton(
-                    icon=ft.icons.CANCEL,
+                    icon=ft.Icons.CANCEL,
                     tooltip="Cancel task",
                     on_click=lambda e, task_id=task_id: self.cancel_task(task_id),
                 )
@@ -166,7 +166,7 @@ class AppListView:
         # Delete button for all tasks
         actions.append(
             ft.IconButton(
-                icon=ft.icons.DELETE,
+                icon=ft.Icons.DELETE,
                 tooltip="Delete task",
                 on_click=lambda e, task_id=task_id: self.delete_task(task_id),
             )
@@ -176,7 +176,7 @@ class AppListView:
         if status == TASK_STATUS_COMPLETED:
             actions.append(
                 ft.IconButton(
-                    icon=ft.icons.BUILD,
+                    icon=ft.Icons.BUILD,
                     tooltip="Build APK",
                     on_click=lambda e, task=task: self.build_apk(task),
                 )

@@ -37,9 +37,9 @@ def main(page: ft.Page):
     # Create navigation bar
     navigation = ft.NavigationBar(
         destinations=[
-            ft.NavigationBarDestination(icon=ft.icons.LIST, label="App List"),
-            ft.NavigationBarDestination(icon=ft.icons.CREATE, label="Generate"),
-            ft.NavigationBarDestination(icon=ft.icons.SETTINGS, label="Settings"),
+            ft.NavigationBarDestination(icon=ft.Icons.LIST, label="App List"),
+            ft.NavigationBarDestination(icon=ft.Icons.CREATE, label="Generate"),
+            ft.NavigationBarDestination(icon=ft.Icons.SETTINGS, label="Settings"),
         ],
         selected_index=0,
         on_change=change_view,

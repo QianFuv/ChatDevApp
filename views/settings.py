@@ -45,14 +45,14 @@ class SettingsView:
         # Save button
         self.save_button = ft.ElevatedButton(
             text="Save Settings",
-            icon=ft.icons.SAVE,
+            icon=ft.Icons.SAVE,
             on_click=self.save_settings,
         )
         
         # Test connection button
         self.test_button = ft.ElevatedButton(
             text="Test Connection",
-            icon=ft.icons.NETWORK_CHECK,
+            icon=ft.Icons.NETWORK_CHECK,
             on_click=self.test_connection,
         )
         

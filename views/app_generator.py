@@ -66,7 +66,7 @@ class AppGeneratorView:
         # Generate button
         self.generate_button = ft.ElevatedButton(
             text="Generate Project",
-            icon=ft.icons.CREATE,
+            icon=ft.Icons.CREATE,
             on_click=self.generate_project,
         )
         
