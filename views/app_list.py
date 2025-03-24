@@ -147,7 +147,24 @@ class AppListView:
         }.get(status, ft.Colors.GREY)
         
         task_id = task.get("task_id", 0)
-        name = task.get("name", "Unknown")
+        
+        # Extract name from result_path if available
+        result_path = task.get("result_path", "")
+        name = "Unknown"
+        
+        if result_path:
+            # Parse result_path to extract project name
+            try:
+                # Expected format: "WareHouse/ProjectName_Organization_Timestamp"
+                parts = result_path.split('/')
+                if len(parts) >= 2:
+                    # Get the last part and split by underscore
+                    name_parts = parts[-1].split('_')
+                    if name_parts:
+                        name = name_parts[0]
+            except Exception:
+                pass
+                
         created_at = task.get("created_at", "Unknown")
         
         # Actions based on status
