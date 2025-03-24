@@ -273,7 +273,9 @@ class AppListView:
         try:
             result = self.api_client.delete_task(task_id)
             
-            if result.get("success", False):
+            # The delete API returns a message field, not a success field
+            # Check for a message that indicates success
+            if "deleted successfully" in result.get("message", ""):
                 self.page.snack_bar = ft.SnackBar(
                     content=ft.Text(f"Task #{task_id} deleted successfully"),
                     action="Dismiss",

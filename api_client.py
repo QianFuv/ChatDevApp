@@ -77,7 +77,8 @@ class APIClient:
         """Get headers with API key for endpoints that require header authentication"""
         headers = self.headers.copy()
         if self.api_key:
-            headers["X-API-Key"] = self.api_key
+            # Use the correct header name: 'api-key' instead of 'X-API-Key'
+            headers["api-key"] = self.api_key
         return headers
     
     def generate_project(self, 
@@ -242,13 +243,16 @@ class APIClient:
             # Use X-API-Key header as specified in API docs
             headers = self._get_headers_with_api_key()
             
+            # Log the headers for debugging
+            self._log(f"Using headers for delete: {headers}", "DEBUG")
+            
             response = requests.delete(
                 f"{self.base_url}task/{task_id}", 
                 headers=headers
             )
             response.raise_for_status()
             result = response.json()
-            self._log(f"Task #{task_id} deleted successfully")
+            self._log(f"Task #{task_id} deleted successfully: {result}")
             return result
         except requests.RequestException as e:
             self._log(f"Failed to delete task: {str(e)}", "ERROR")
@@ -269,13 +273,14 @@ class APIClient:
         Returns:
             Dict containing build status, message, and artifact paths
         """
+        # Include API key in both header and body as per the cURL example
         data = {
             "api_key": self.api_key,
             "project_name": project_name
         }
         
-        # Add optional parameters if provided
-        if organization:
+        # Add optional parameters if provided and they're not empty or "string" placeholder
+        if organization and organization != "string":
             data["organization"] = organization
         if timestamp:
             data["timestamp"] = timestamp
@@ -286,12 +291,29 @@ class APIClient:
             # Add API key to headers
             headers = self._get_headers_with_api_key()
             
+            # Log the request for debugging
+            self._log(f"Using headers for build APK: {headers}", "DEBUG")
+            self._log(f"Request payload: {data}", "DEBUG")
+            
             # Send API request
             response = requests.post(
                 f"{self.base_url}build-apk", 
                 headers=headers,
                 json=data
             )
+            
+            # Log the response for debugging
+            self._log(f"APK build response status: {response.status_code}", "DEBUG")
+            if response.status_code != 200:
+                self._log(f"Error response content: {response.text}", "DEBUG")
+                
+            # Try to parse error message from response even if status is not OK
+            if response.status_code == 422:
+                error_data = response.json()
+                error_detail = error_data.get("detail", "Validation error")
+                self._log(f"Validation error details: {error_detail}", "ERROR")
+                raise Exception(f"Validation error: {error_detail}")
+                
             response.raise_for_status()
             result = response.json()
             
