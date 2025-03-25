@@ -147,21 +147,25 @@ class AppListView:
         }.get(status, ft.Colors.GREY)
         
         task_id = task.get("task_id", 0)
-        
-        # Extract name from result_path if available
         result_path = task.get("result_path", "")
-        name = "Unknown"
+        
+        # Extract project name, organization, and timestamp from result_path
+        project_name = "Unknown"
+        organization = "DefaultOrganization"
+        timestamp = ""
         
         if result_path:
-            # Parse result_path to extract project name
+            # Parse result_path to extract project information
             try:
                 # Expected format: "WareHouse/ProjectName_Organization_Timestamp"
                 parts = result_path.split('/')
                 if len(parts) >= 2:
                     # Get the last part and split by underscore
-                    name_parts = parts[-1].split('_')
-                    if name_parts:
-                        name = name_parts[0]
+                    project_parts = parts[-1].split('_')
+                    if len(project_parts) >= 3:
+                        project_name = project_parts[0]
+                        organization = project_parts[1]
+                        timestamp = project_parts[2]
             except Exception:
                 pass
                 
@@ -189,13 +193,14 @@ class AppListView:
             )
         )
         
-        # Build APK button for completed tasks
-        if status == TASK_STATUS_COMPLETED:
+        # Build APK button for completed tasks with valid project info
+        if status == TASK_STATUS_COMPLETED and project_name != "Unknown" and result_path:
             actions.append(
                 ft.IconButton(
                     icon=ft.Icons.BUILD,
                     tooltip="Build APK",
-                    on_click=lambda e, task=task: self.build_apk(task),
+                    on_click=lambda e, pn=project_name, org=organization, ts=timestamp: 
+                        self.build_apk(pn, org, ts),
                 )
             )
         
@@ -205,7 +210,7 @@ class AppListView:
                     [
                         ft.Row(
                             [
-                                ft.Text(f"#{task_id}: {name}", weight=ft.FontWeight.BOLD),
+                                ft.Text(f"#{task_id}: {project_name}", weight=ft.FontWeight.BOLD),
                                 ft.Container(
                                     content=ft.Text(status),
                                     bgcolor=status_color,
@@ -314,13 +319,16 @@ class AppListView:
         
         self.page.update()
     
-    def build_apk(self, task):
+    def build_apk(self, project_name, organization, timestamp):
         """Build APK for a task"""
-        project_name = task.get("name", "")
-        organization = task.get("org", "DefaultOrganization")
-        timestamp = task.get("created_at", "").split(" ")[0]  # Extract date part
+        self.loading.visible = True
+        self.page.update()
         
         try:
+            # Validate project name before sending request
+            if not project_name or project_name == "Unknown":
+                raise ValueError("Invalid project name")
+                
             result = self.api_client.build_apk(
                 project_name=project_name,
                 organization=organization,
@@ -339,11 +347,18 @@ class AppListView:
                     action="Dismiss",
                 )
                 self.page.snack_bar.open = True
+        except ValueError as ve:
+            self.page.snack_bar = ft.SnackBar(
+                content=ft.Text(f"Error: {str(ve)}"),
+                action="Dismiss",
+            )
+            self.page.snack_bar.open = True
         except Exception as e:
             self.page.snack_bar = ft.SnackBar(
                 content=ft.Text(f"Error: {str(e)}"),
                 action="Dismiss",
             )
             self.page.snack_bar.open = True
-        
-        self.page.update()
+        finally:
+            self.loading.visible = False
+            self.page.update()
