@@ -77,7 +77,7 @@ class APIClient:
         """Get headers with API key for endpoints that require header authentication"""
         headers = self.headers.copy()
         if self.api_key:
-            # Use the correct header name: 'api-key' instead of 'X-API-Key'
+            # FastAPI converts parameter name 'api_key' to header name 'api-key'
             headers["api-key"] = self.api_key
         return headers
     
@@ -106,6 +106,13 @@ class APIClient:
         Returns:
             Dict containing task_id, status, and created_at
         """
+        # Validate inputs
+        if not task or len(task) < 10 or len(task) > 2000:
+            raise ValueError("Task description must be between 10 and 2000 characters")
+        
+        if not name:
+            raise ValueError("Project name is required")
+            
         data = {
             "api_key": self.api_key,
             "task": task,
@@ -128,6 +135,16 @@ class APIClient:
                 headers=self.headers,
                 json=data
             )
+            
+            # Handle common status codes
+            if response.status_code == 401:
+                self._log("Authentication failed: Invalid API key", "ERROR")
+                raise Exception("Authentication failed: Invalid API key")
+            elif response.status_code == 422:
+                error_data = response.json()
+                self._log(f"Validation error: {error_data}", "ERROR")
+                raise ValueError(f"Validation error: {str(error_data.get('detail', 'Unknown validation error'))}")
+                
             response.raise_for_status()
             result = response.json()
             self._log(f"Project generation task created successfully. ID: {result.get('task_id')}")
@@ -146,6 +163,9 @@ class APIClient:
         Returns:
             Dict containing task status information
         """
+        if not isinstance(task_id, int) or task_id <= 0:
+            raise ValueError("task_id must be a positive integer")
+            
         try:
             self._log(f"Checking status of task #{task_id}")
             
@@ -153,6 +173,11 @@ class APIClient:
                 f"{self.base_url}status/{task_id}", 
                 headers=self.headers
             )
+            
+            if response.status_code == 404:
+                self._log(f"Task #{task_id} not found", "ERROR")
+                raise Exception(f"Task with ID {task_id} not found")
+                
             response.raise_for_status()
             result = response.json()
             self._log(f"Task #{task_id} status: {result.get('status', 'Unknown')}")
@@ -176,6 +201,13 @@ class APIClient:
         Returns:
             Dict containing tasks list and total count
         """
+        # Validate inputs
+        if limit < 1 or limit > 100:
+            raise ValueError("limit must be between 1 and 100")
+        
+        if offset < 0:
+            raise ValueError("offset must be non-negative")
+            
         try:
             self._log(f"Fetching tasks from API" + (f" with status: {status}" if status else ""))
             
@@ -190,6 +222,13 @@ class APIClient:
                 headers=self.headers,
                 params=params
             )
+            
+            # Handle validation errors
+            if response.status_code == 422:
+                error_data = response.json()
+                self._log(f"Validation error: {error_data}", "ERROR")
+                raise ValueError(f"Validation error: {str(error_data.get('detail', 'Unknown validation error'))}")
+                
             response.raise_for_status()
             result = response.json()
             self._log(f"Successfully fetched {len(result.get('tasks', []))} tasks")
@@ -208,6 +247,9 @@ class APIClient:
         Returns:
             Dict containing updated task status
         """
+        if not isinstance(task_id, int) or task_id <= 0:
+            raise ValueError("task_id must be a positive integer")
+            
         data = {
             "api_key": self.api_key
         }
@@ -219,6 +261,18 @@ class APIClient:
                 headers=self.headers,
                 json=data
             )
+            
+            if response.status_code == 404:
+                self._log(f"Task #{task_id} not found", "ERROR")
+                raise Exception(f"Task with ID {task_id} not found")
+            elif response.status_code == 400:
+                error_data = response.json()
+                self._log(f"Cannot cancel task: {error_data.get('detail', 'Unknown error')}", "ERROR")
+                raise Exception(f"Cannot cancel task: {error_data.get('detail', 'Unknown error')}")
+            elif response.status_code == 401:
+                self._log("Authentication failed: Invalid API key", "ERROR")
+                raise Exception("Authentication failed: Invalid API key")
+                
             response.raise_for_status()
             result = response.json()
             self._log(f"Task #{task_id} cancellation result: {result.get('status', 'Unknown')}")
@@ -237,10 +291,13 @@ class APIClient:
         Returns:
             Dict containing confirmation message
         """
+        if not isinstance(task_id, int) or task_id <= 0:
+            raise ValueError("task_id must be a positive integer")
+            
         try:
             self._log(f"Deleting task #{task_id}")
                 
-            # Use X-API-Key header as specified in API docs
+            # Use the correct header name to match FastAPI's expectation
             headers = self._get_headers_with_api_key()
             
             # Log the headers for debugging
@@ -250,6 +307,14 @@ class APIClient:
                 f"{self.base_url}task/{task_id}", 
                 headers=headers
             )
+            
+            if response.status_code == 404:
+                self._log(f"Task #{task_id} not found", "ERROR")
+                raise Exception(f"Task with ID {task_id} not found")
+            elif response.status_code == 401:
+                self._log("Authentication failed: Invalid API key", "ERROR")
+                raise Exception("Authentication failed: Invalid API key")
+                
             response.raise_for_status()
             result = response.json()
             self._log(f"Task #{task_id} deleted successfully: {result}")
@@ -273,7 +338,10 @@ class APIClient:
         Returns:
             Dict containing build status, message, and artifact paths
         """
-        # Include API key in both header and body as per the cURL example
+        if not project_name:
+            raise ValueError("project_name is required")
+            
+        # Include API key in both header and body as recommended in the API documentation
         data = {
             "api_key": self.api_key,
             "project_name": project_name
@@ -288,7 +356,7 @@ class APIClient:
         try:
             self._log(f"Building APK for project: {project_name}")
             
-            # Add API key to headers
+            # Add API key to headers for additional authentication
             headers = self._get_headers_with_api_key()
             
             # Log the request for debugging
@@ -304,16 +372,22 @@ class APIClient:
             
             # Log the response for debugging
             self._log(f"APK build response status: {response.status_code}", "DEBUG")
-            if response.status_code != 200:
-                self._log(f"Error response content: {response.text}", "DEBUG")
-                
-            # Try to parse error message from response even if status is not OK
-            if response.status_code == 422:
+            
+            # Handle common error codes
+            if response.status_code == 404:
+                self._log(f"Project not found: {project_name}", "ERROR")
+                raise Exception(f"Project not found: {project_name}")
+            elif response.status_code == 401:
+                self._log("Authentication failed: Invalid API key", "ERROR")
+                raise Exception("Authentication failed: Invalid API key")
+            elif response.status_code == 422:
                 error_data = response.json()
                 error_detail = error_data.get("detail", "Validation error")
                 self._log(f"Validation error details: {error_detail}", "ERROR")
-                raise Exception(f"Validation error: {error_detail}")
-                
+                raise ValueError(f"Validation error: {error_detail}")
+            elif response.status_code != 200:
+                self._log(f"Error response content: {response.text}", "DEBUG")
+                    
             response.raise_for_status()
             result = response.json()
             
