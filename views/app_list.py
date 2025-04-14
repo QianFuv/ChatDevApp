@@ -82,32 +82,38 @@ class AppListView:
                     content=ft.Text("App List", size=24, weight=ft.FontWeight.BOLD),
                     padding=10,
                 ),
-                # Filter and action buttons that stay on the same line
+                # Filter and action buttons in a container with consistent padding
                 ft.Container(
-                    content=ft.Row(
+                    content=ft.Column(
                         [
-                            # Dropdown expands to fill available space
-                            ft.Container(
-                                content=self.status_dropdown,
-                                expand=True,
+                            # Filter and action buttons that stay on the same line
+                            ft.Row(
+                                [
+                                    # Dropdown expands to fill available space
+                                    ft.Container(
+                                        content=self.status_dropdown,
+                                        expand=True,
+                                    ),
+                                    # Actions stay together in a compact layout
+                                    ft.Container(
+                                        content=ft.Row(
+                                            [self.refresh_button, self.loading],
+                                            spacing=0,
+                                            wrap=False,  # Prevent wrapping
+                                        ),
+                                        padding=ft.padding.only(left=8),
+                                    ),
+                                ],
+                                spacing=0,
+                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
                             ),
-                            # Actions stay together in a compact layout
-                            ft.Container(
-                                content=ft.Row(
-                                    [self.refresh_button, self.loading],
-                                    spacing=0,
-                                    wrap=False,  # Prevent wrapping
-                                ),
-                                padding=ft.padding.only(left=8),
-                            ),
+                            self.tasks_list,
+                            self.pagination,
                         ],
-                        spacing=0,
-                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     ),
-                    padding=ft.padding.only(left=20, right=20, bottom=10),
+                    padding=20,
+                    border_radius=10,
                 ),
-                self.tasks_list,
-                self.pagination,
             ],
             expand=True,
             scroll=ft.ScrollMode.AUTO,
