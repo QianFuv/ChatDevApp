@@ -89,6 +89,7 @@ class AppGeneratorView:
                 ft.Container(
                     content=ft.Text("Generate New App", size=24, weight=ft.FontWeight.BOLD),
                     padding=10,
+                    margin=ft.margin.only(top=20),
                 ),
                 ft.Container(
                     content=ft.Column(
