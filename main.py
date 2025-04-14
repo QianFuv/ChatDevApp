@@ -15,6 +15,8 @@ def main(page: ft.Page):
     # Set up page
     page.title = "ChatDev Mobile"
     page.theme_mode = ft.ThemeMode.SYSTEM
+    page.window.width = 450
+    page.window.height = 800
     
     # Initialize API client with settings
     settings = load_settings()
@@ -41,7 +43,7 @@ def main(page: ft.Page):
             ft.NavigationBarDestination(icon=ft.Icons.CREATE, label="Generate"),
             ft.NavigationBarDestination(icon=ft.Icons.SETTINGS, label="Settings"),
         ],
-        selected_index=0,
+        selected_index=1,
         on_change=change_view,
     )
     
@@ -54,7 +56,7 @@ def main(page: ft.Page):
     
     # Content container
     content_container = ft.Container(
-        content=views[0],
+        content=views[1],
         expand=True,
     )
     
