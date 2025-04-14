@@ -1,5 +1,4 @@
-/storage
-
-/chatdev_settings.json
-
 __pycache__
+/.vscode
+/storage
+/chatdev_settings.json

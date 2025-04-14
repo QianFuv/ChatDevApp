@@ -46,6 +46,7 @@ class AppListView:
             ],
             value="All",
             on_change=self.change_status_filter,
+            content_padding=ft.padding.only(right=10),  # Add padding for better appearance
         )
         
         self.pagination = ft.Row(
@@ -68,9 +69,10 @@ class AppListView:
         self.refresh_button = ft.IconButton(
             icon=ft.Icons.REFRESH,
             on_click=self.fetch_tasks,
+            tooltip="Refresh",
         )
         
-        self.loading = ft.ProgressRing(visible=False)
+        self.loading = ft.ProgressRing(visible=False, width=24, height=24)
     
     def build(self):
         """Build and return the view"""
@@ -80,13 +82,29 @@ class AppListView:
                     content=ft.Text("App List", size=24, weight=ft.FontWeight.BOLD),
                     padding=10,
                 ),
-                ft.Row(
-                    [
-                        self.status_dropdown,
-                        self.refresh_button,
-                        self.loading,
-                    ],
-                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                # Filter and action buttons that stay on the same line
+                ft.Container(
+                    content=ft.Row(
+                        [
+                            # Dropdown expands to fill available space
+                            ft.Container(
+                                content=self.status_dropdown,
+                                expand=True,
+                            ),
+                            # Actions stay together in a compact layout
+                            ft.Container(
+                                content=ft.Row(
+                                    [self.refresh_button, self.loading],
+                                    spacing=0,
+                                    wrap=False,  # Prevent wrapping
+                                ),
+                                padding=ft.padding.only(left=8),
+                            ),
+                        ],
+                        spacing=0,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                    ),
+                    padding=ft.padding.only(left=20, right=20, bottom=10),
                 ),
                 self.tasks_list,
                 self.pagination,
