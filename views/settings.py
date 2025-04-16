@@ -69,7 +69,7 @@ class SettingsView:
                 ft.Container(
                     content=ft.Text("Settings", size=24, weight=ft.FontWeight.BOLD),
                     padding=10,
-                    margin=ft.margin.only(top=20),
+                    margin=ft.margin.only(top=30),
                 ),
                 ft.Container(
                     content=ft.Column(
