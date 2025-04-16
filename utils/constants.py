@@ -11,9 +11,12 @@ TASK_STATUS_CANCELLED = "CANCELLED"
 # Available models
 MODELS = [
     "CLAUDE_3_5_SONNET",
-    "GPT-3.5-TURBO",
-    "GPT-4",
-    # Add more models as needed
+    "GPT_3_5_TURBO",
+    "GPT_4",
+    "GPT_4_TURBO",
+    "GPT_4O",
+    "GPT_4O_MINI",
+    "DEEPSEEK_R1"
 ]
 
 # Available configurations

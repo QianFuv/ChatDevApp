@@ -33,7 +33,7 @@ class AppGeneratorView:
         self.config_dropdown = ft.Dropdown(
             label="Configuration",
             options=[ft.dropdown.Option(config) for config in CONFIGURATIONS],
-            value=CONFIGURATIONS[0],
+            value=CONFIGURATIONS[3],
         )
         
         self.org_field = ft.TextField(
@@ -45,7 +45,7 @@ class AppGeneratorView:
         self.model_dropdown = ft.Dropdown(
             label="Model",
             options=[ft.dropdown.Option(model) for model in MODELS],
-            value=MODELS[0],
+            value=MODELS[6],
         )
         
         self.path_field = ft.TextField(
@@ -61,6 +61,7 @@ class AppGeneratorView:
         self.base_url_field = ft.TextField(
             label="Base URL (Optional)",
             hint_text="Optional base URL for API calls (useful for proxies)",
+            value="https://openrouter.ai/api/v1"
         )
         
         # Generate button
@@ -94,8 +95,8 @@ class AppGeneratorView:
                 ft.Container(
                     content=ft.Column(
                         [
-                            self.task_field,
                             self.name_field,
+                            self.task_field,
                             self.config_dropdown,
                             self.org_field,
                             self.model_dropdown,
