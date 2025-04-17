@@ -1,5 +1,5 @@
 import requests
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import logging
 
 
@@ -161,7 +161,7 @@ class APIClient:
             task_id: The unique identifier of the task to check
             
         Returns:
-            Dict containing task status information
+            Dict containing task status information including apk_build_status if available
         """
         if not isinstance(task_id, int) or task_id <= 0:
             raise ValueError("task_id must be a positive integer")
@@ -180,7 +180,15 @@ class APIClient:
                 
             response.raise_for_status()
             result = response.json()
-            self._log(f"Task #{task_id} status: {result.get('status', 'Unknown')}")
+            
+            task_status = result.get('status', 'Unknown')
+            apk_status = result.get('apk_build_status')
+            
+            if apk_status:
+                self._log(f"Task #{task_id} status: {task_status}, APK build status: {apk_status}")
+            else:
+                self._log(f"Task #{task_id} status: {task_status}")
+                
             return result
         except requests.RequestException as e:
             self._log(f"Failed to get task status: {str(e)}", "ERROR")
@@ -231,6 +239,12 @@ class APIClient:
                 
             response.raise_for_status()
             result = response.json()
+            
+            # Log tasks with APK build status if available
+            tasks_with_apk = [task for task in result.get('tasks', []) if task.get('apk_build_status')]
+            if tasks_with_apk:
+                self._log(f"Found {len(tasks_with_apk)} tasks with APK build status")
+                
             self._log(f"Successfully fetched {len(result.get('tasks', []))} tasks")
             return result
         except requests.RequestException as e:
@@ -326,7 +340,8 @@ class APIClient:
     def build_apk(self, 
                  project_name: str, 
                  organization: Optional[str] = None, 
-                 timestamp: Optional[str] = None) -> Dict[str, Any]:
+                 timestamp: Optional[str] = None,
+                 task_id: Optional[int] = None) -> Dict[str, Any]:
         """
         Build an APK from an existing project
         
@@ -334,6 +349,7 @@ class APIClient:
             project_name: Name of the project to build
             organization: Organization name in the project path
             timestamp: Timestamp in the project path
+            task_id: Optional task ID if building APK for an existing task
             
         Returns:
             Dict containing build status, message, and artifact paths
@@ -352,6 +368,8 @@ class APIClient:
             data["organization"] = organization
         if timestamp:
             data["timestamp"] = timestamp
+        if task_id and isinstance(task_id, int) and task_id > 0:
+            data["task_id"] = task_id
         
         try:
             self._log(f"Building APK for project: {project_name}")
@@ -401,6 +419,15 @@ class APIClient:
         except requests.RequestException as e:
             self._log(f"Failed to build APK: {str(e)}", "ERROR")
             raise Exception(f"Failed to build APK: {str(e)}")
+            
+    def get_apk_build_statuses(self) -> List[str]:
+        """
+        Get possible APK build status values
+        
+        Returns:
+            List of valid APK build status values
+        """
+        return ["BUILDING", "BUILDED", "BUILDFAILED"]
             
     def health_check(self) -> Dict[str, Any]:
         """

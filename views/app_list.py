@@ -8,6 +8,11 @@ from utils.constants import (
     TASK_STATUS_CANCELLED,
 )
 
+# APK build status constants
+APK_STATUS_BUILDING = "BUILDING"
+APK_STATUS_BUILDED = "BUILDED"
+APK_STATUS_BUILDFAILED = "BUILDFAILED"
+
 class AppListView:
     """View for displaying and managing ChatDev tasks"""
     
@@ -162,6 +167,7 @@ class AppListView:
     
     def create_task_card(self, task):
         """Create a card for a task"""
+        # Task status
         status = task.get("status", "Unknown")
         status_color = {
             TASK_STATUS_PENDING: ft.Colors.ORANGE,
@@ -171,8 +177,17 @@ class AppListView:
             TASK_STATUS_CANCELLED: ft.Colors.GREY,
         }.get(status, ft.Colors.GREY)
         
+        # APK build status
+        apk_build_status = task.get("apk_build_status")
+        apk_status_color = {
+            APK_STATUS_BUILDING: ft.Colors.BLUE,
+            APK_STATUS_BUILDED: ft.Colors.GREEN,
+            APK_STATUS_BUILDFAILED: ft.Colors.RED,
+        }.get(apk_build_status, None)
+        
         task_id = task.get("task_id", 0)
         result_path = task.get("result_path", "")
+        apk_path = task.get("apk_path", "")
         
         # Extract project name, organization, and timestamp from result_path
         project_name = "Unknown"
@@ -218,14 +233,53 @@ class AppListView:
             )
         )
         
-        # Build APK button for completed tasks with valid project info
+        # Build APK button based on status and APK build status
         if status == TASK_STATUS_COMPLETED and project_name != "Unknown" and result_path:
-            actions.append(
-                ft.IconButton(
-                    icon=ft.Icons.BUILD,
-                    tooltip="Build APK",
-                    on_click=lambda e, pn=project_name, org=organization, ts=timestamp: 
-                        self.build_apk(pn, org, ts),
+            # Show build button when completed and no APK status, or when APK build failed
+            if not apk_build_status or apk_build_status == APK_STATUS_BUILDFAILED:
+                actions.append(
+                    ft.IconButton(
+                        icon=ft.Icons.BUILD,
+                        tooltip="Build APK",
+                        on_click=lambda e, pn=project_name, org=organization, ts=timestamp, tid=task_id: 
+                            self.build_apk(pn, org, ts, tid),
+                    )
+                )
+            # Show download button when APK is built
+            elif apk_build_status == APK_STATUS_BUILDED and apk_path:
+                actions.append(
+                    ft.IconButton(
+                        icon=ft.Icons.DOWNLOAD,
+                        tooltip="Download APK",
+                        on_click=lambda e, path=apk_path: self.show_apk_info(path),
+                    )
+                )
+        
+        # Create status badges
+        status_badges = [
+            ft.Container(
+                content=ft.Text(
+                    status,
+                    size=10,  # Reduced font size (approximately 50% smaller)
+                ),
+                bgcolor=status_color,
+                padding=2.5,  # Reduced padding by 50%
+                border_radius=3,  # Reduced border radius for better proportions
+            )
+        ]
+
+        # Add APK build status badge if available
+        if apk_build_status and apk_status_color:
+            status_badges.append(
+                ft.Container(
+                    content=ft.Text(
+                        f"APK: {apk_build_status}",
+                        size=10,  # Reduced font size
+                    ),
+                    bgcolor=apk_status_color,
+                    padding=2.5,  # Reduced padding by 50%
+                    border_radius=3,  # Reduced border radius
+                    margin=ft.margin.only(left=3),  # Reduced margin as well
                 )
             )
         
@@ -236,16 +290,20 @@ class AppListView:
                         ft.Row(
                             [
                                 ft.Text(f"#{task_id}: {project_name}", weight=ft.FontWeight.BOLD),
-                                ft.Container(
-                                    content=ft.Text(status),
-                                    bgcolor=status_color,
-                                    padding=5,
-                                    border_radius=5,
-                                ),
+                                ft.Row(status_badges),
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         ),
                         ft.Text(f"Created: {created_at}"),
+                        # Show APK path if available
+                        ft.Text(
+                            f"APK: {apk_path}" if apk_path else "",
+                            visible=bool(apk_path),
+                            style=ft.TextStyle(
+                                italic=True,
+                                size=12,
+                            ),
+                        ),
                         ft.Row(
                             actions,
                             alignment=ft.MainAxisAlignment.END,
@@ -344,7 +402,7 @@ class AppListView:
         
         self.page.update()
     
-    def build_apk(self, project_name, organization, timestamp):
+    def build_apk(self, project_name, organization, timestamp, task_id=None):
         """Build APK for a task"""
         self.loading.visible = True
         self.page.update()
@@ -358,14 +416,17 @@ class AppListView:
                 project_name=project_name,
                 organization=organization,
                 timestamp=timestamp,
+                task_id=task_id,
             )
             
             if result.get("success", False):
                 self.page.snack_bar = ft.SnackBar(
-                    content=ft.Text(f"APK built successfully: {result.get('apk_path', '')}"),
+                    content=ft.Text(f"APK build initiated successfully"),
                     action="Dismiss",
                 )
                 self.page.snack_bar.open = True
+                # Refresh the task list to show updated status
+                self.fetch_tasks()
             else:
                 self.page.snack_bar = ft.SnackBar(
                     content=ft.Text(f"Failed to build APK: {result.get('message', 'Unknown error')}"),
@@ -387,3 +448,27 @@ class AppListView:
         finally:
             self.loading.visible = False
             self.page.update()
+    
+    def show_apk_info(self, apk_path):
+        """Show APK information and download options"""
+        def close_dialog(e):
+            dialog.open = False
+            self.page.update()
+        
+        # Create dialog content
+        dialog = ft.AlertDialog(
+            title=ft.Text("APK Download Information"),
+            content=ft.Column([
+                ft.Text("APK is available on the server at:"),
+                ft.Text(apk_path, selectable=True),
+                ft.Text("\nTo download, connect to the server and locate this file."),
+            ], tight=True, spacing=10, width=400),
+            actions=[
+                ft.TextButton("Close", on_click=close_dialog),
+            ],
+        )
+        
+        # Show dialog
+        self.page.dialog = dialog
+        dialog.open = True
+        self.page.update()
